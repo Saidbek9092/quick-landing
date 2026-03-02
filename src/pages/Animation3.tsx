@@ -1,10 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import qt2Video from '../assets/qt2.mov';
-import { useVideoScrub } from '../hooks/useVideoScrub';
 
-gsap.registerPlugin(ScrollTrigger);
+const SCROLL_PAUSE_DELAY_MS = 150;
 
 interface StatItem {
   readonly value: string;
@@ -174,164 +171,58 @@ const HERO_STATS: ReadonlyArray<StatItem> = [
 
 export const Animation3: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
+  const [visibleSections, setVisibleSections] = useState<boolean[]>(
+    Array(SECTIONS.length).fill(false)
+  );
 
-  useVideoScrub({
-    videoRef,
-    scrollerRef: containerRef,
-    contentRef,
-  });
+  const playVideo = useCallback(() => {
+    videoRef.current?.play().catch(() => {});
+  }, []);
+
+  const pauseVideo = useCallback(() => {
+    videoRef.current?.pause();
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const ctx = gsap.context(() => {
-      if (heroRef.current) {
-        const heroElements = heroRef.current.querySelectorAll('[data-hero]');
-        gsap.fromTo(
-          heroElements,
-          { opacity: 0, y: 40, force3D: true },
-          {
-            opacity: 1,
-            y: 0,
-            force3D: true,
-            stagger: 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: heroRef.current,
-              scroller: container,
-              start: 'top 90%',
-              end: 'top 40%',
-              scrub: 1.2,
-            },
-          }
-        );
+    const handleScroll = () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
+      playVideo();
+      scrollTimeoutRef.current = setTimeout(() => {
+        pauseVideo();
+        scrollTimeoutRef.current = null;
+      }, SCROLL_PAUSE_DELAY_MS);
 
-      sectionRefs.current.forEach((sectionEl, i) => {
-        if (!sectionEl) return;
-
-        const card = sectionEl.querySelector('[data-anim="card"]');
-        const iconEl = sectionEl.querySelector('[data-anim="icon"]');
-        const statsEl = sectionEl.querySelectorAll('[data-anim="stat"]');
-        const tagsEl = sectionEl.querySelectorAll('[data-anim="tag"]');
-
-        const isLeft = SECTIONS[i].position === 'left';
-
-        if (card) {
-          gsap.fromTo(
-            card,
-            { opacity: 0, x: isLeft ? -100 : 100, rotateY: isLeft ? -8 : 8, force3D: true },
-            {
-              opacity: 1,
-              x: 0,
-              rotateY: 0,
-              force3D: true,
-              ease: 'power3.out',
-              scrollTrigger: {
-                trigger: sectionEl,
-                scroller: container,
-                start: 'top 85%',
-                end: 'top 25%',
-                scrub: 1.2,
-              },
-            }
-          );
-        }
-
-        if (iconEl) {
-          gsap.fromTo(
-            iconEl,
-            { opacity: 0, scale: 0, rotation: -180, force3D: true },
-            {
-              opacity: 1,
-              scale: 1,
-              rotation: 0,
-              force3D: true,
-              ease: 'back.out(1.7)',
-              scrollTrigger: {
-                trigger: sectionEl,
-                scroller: container,
-                start: 'top 80%',
-                end: 'top 35%',
-                scrub: 1.2,
-              },
-            }
-          );
-        }
-
-        if (statsEl.length > 0) {
-          gsap.fromTo(
-            statsEl,
-            { opacity: 0, y: 20, force3D: true },
-            {
-              opacity: 1,
-              y: 0,
-              force3D: true,
-              stagger: 0.08,
-              ease: 'power2.out',
-              scrollTrigger: {
-                trigger: sectionEl,
-                scroller: container,
-                start: 'top 70%',
-                end: 'top 25%',
-                scrub: 1.2,
-              },
-            }
-          );
-        }
-
-        if (tagsEl.length > 0) {
-          gsap.fromTo(
-            tagsEl,
-            { opacity: 0, scale: 0.8, force3D: true },
-            {
-              opacity: 1,
-              scale: 1,
-              force3D: true,
-              stagger: 0.06,
-              ease: 'power2.out',
-              scrollTrigger: {
-                trigger: sectionEl,
-                scroller: container,
-                start: 'top 65%',
-                end: 'top 20%',
-                scrub: 1.2,
-              },
-            }
-          );
-        }
+      const newVisible = sectionRefs.current.map((ref) => {
+        if (!ref) return false;
+        const rect = ref.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const containerCenter =
+          containerRect.top + containerRect.height / 2;
+        return (
+          rect.top < containerCenter + 100 &&
+          rect.bottom > containerCenter - 100
+        );
       });
+      setVisibleSections(newVisible);
+    };
 
-      if (ctaRef.current) {
-        gsap.fromTo(
-          ctaRef.current,
-          { opacity: 0, y: 60, scale: 0.95, force3D: true },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            force3D: true,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: ctaRef.current,
-              scroller: container,
-              start: 'top 85%',
-              end: 'top 40%',
-              scrub: 1.2,
-            },
-          }
-        );
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
-    }, container);
-
-    return () => ctx.revert();
-  }, []);
+    };
+  }, [playVideo, pauseVideo]);
 
   return (
     <div
@@ -343,8 +234,9 @@ export const Animation3: React.FC = () => {
           <video
             ref={videoRef}
             src={qt2Video}
-            className="w-full h-full object-cover will-change-auto"
+            className="w-full h-full object-cover"
             muted
+            loop
             playsInline
             preload="auto"
           />
@@ -352,26 +244,17 @@ export const Animation3: React.FC = () => {
         </div>
       </div>
 
-      <div ref={contentRef} className="relative z-10">
+      <div className="relative z-10">
         {/* Hero */}
-        <section
-          ref={heroRef}
-          className="min-h-[90vh] flex flex-col items-center justify-center text-center px-8 py-20"
-        >
-          <div
-            data-hero
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 mb-8"
-          >
+        <section className="min-h-[90vh] flex flex-col items-center justify-center text-center px-8 py-20">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 mb-8">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-sm text-white/80 font-medium tracking-wide">
               Trusted by 500+ service companies
             </span>
           </div>
 
-          <h1
-            data-hero
-            className="text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight drop-shadow-lg leading-tight"
-          >
+          <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 tracking-tight drop-shadow-lg leading-tight">
             Field service
             <br />
             <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">
@@ -379,19 +262,13 @@ export const Animation3: React.FC = () => {
             </span>
           </h1>
 
-          <p
-            data-hero
-            className="text-xl lg:text-2xl text-white/70 mb-12 max-w-2xl font-light leading-relaxed"
-          >
+          <p className="text-xl lg:text-2xl text-white/70 mb-12 max-w-2xl font-light leading-relaxed">
             From voice-powered tickets to instant invoicing — QuickTicketAI
             automates your entire workflow so your team can focus on what
             matters.
           </p>
 
-          <div
-            data-hero
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 mb-12"
-          >
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 mb-12">
             {HERO_STATS.map((stat) => (
               <div
                 key={stat.label}
@@ -407,10 +284,7 @@ export const Animation3: React.FC = () => {
             ))}
           </div>
 
-          <div
-            data-hero
-            className="flex items-center gap-3 text-base text-white/40 animate-bounce mt-4"
-          >
+          <div className="flex items-center gap-3 text-base text-white/40 animate-bounce mt-4">
             <span className="text-xl">↓</span>
             <span className="font-medium">Scroll to explore features</span>
             <span className="text-xl">↓</span>
@@ -433,18 +307,28 @@ export const Animation3: React.FC = () => {
                   : 'mr-auto'
               }`}
             >
+              {/* Icon */}
               <div
-                data-anim="icon"
-                className="shrink-0 will-change-transform"
+                className={`shrink-0 transition-all duration-700 ease-out delay-100 ${
+                  visibleSections[index]
+                    ? 'opacity-100 scale-100'
+                    : 'opacity-0 scale-50'
+                }`}
               >
                 <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-3xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md border border-white/20 flex items-center justify-center text-4xl lg:text-6xl shadow-2xl">
                   {section.icon}
                 </div>
               </div>
 
+              {/* Card */}
               <div
-                data-anim="card"
-                className="bg-white/[0.07] backdrop-blur-xl border border-white/[0.12] rounded-[2rem] p-8 lg:p-10 max-w-2xl w-full shadow-2xl will-change-transform"
+                className={`bg-white/[0.07] backdrop-blur-xl border border-white/[0.12] rounded-[2rem] p-8 lg:p-10 max-w-2xl w-full shadow-2xl transition-all duration-1000 ease-out ${
+                  visibleSections[index]
+                    ? 'opacity-100 translate-y-0'
+                    : section.position === 'left'
+                      ? 'opacity-0 -translate-x-16'
+                      : 'opacity-0 translate-x-16'
+                }`}
               >
                 <div className="flex items-center gap-3 mb-5">
                   <span className="inline-block bg-gradient-to-r from-blue-500 to-cyan-400 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
@@ -470,12 +354,21 @@ export const Animation3: React.FC = () => {
                   {section.desc}
                 </p>
 
+                {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  {section.stats.map((stat) => (
+                  {section.stats.map((stat, si) => (
                     <div
                       key={stat.label}
-                      data-anim="stat"
-                      className="bg-white/[0.06] border border-white/[0.08] rounded-xl px-4 py-3 text-center will-change-transform"
+                      className={`bg-white/[0.06] border border-white/[0.08] rounded-xl px-4 py-3 text-center transition-all duration-700 ease-out ${
+                        visibleSections[index]
+                          ? 'opacity-100 translate-y-0'
+                          : 'opacity-0 translate-y-4'
+                      }`}
+                      style={{
+                        transitionDelay: visibleSections[index]
+                          ? `${200 + si * 100}ms`
+                          : '0ms',
+                      }}
                     >
                       <div className="text-xl lg:text-2xl font-bold text-white mb-0.5">
                         {stat.value}
@@ -487,12 +380,21 @@ export const Animation3: React.FC = () => {
                   ))}
                 </div>
 
+                {/* Tags */}
                 <div className="flex flex-wrap gap-2">
-                  {section.tags.map((tag) => (
+                  {section.tags.map((tag, ti) => (
                     <span
                       key={tag}
-                      data-anim="tag"
-                      className="bg-white/[0.08] border border-white/[0.1] text-white/60 text-xs font-medium px-3 py-1.5 rounded-full will-change-transform"
+                      className={`bg-white/[0.08] border border-white/[0.1] text-white/60 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-500 ease-out ${
+                        visibleSections[index]
+                          ? 'opacity-100 scale-100'
+                          : 'opacity-0 scale-75'
+                      }`}
+                      style={{
+                        transitionDelay: visibleSections[index]
+                          ? `${400 + ti * 80}ms`
+                          : '0ms',
+                      }}
                     >
                       {tag}
                     </span>
@@ -505,10 +407,7 @@ export const Animation3: React.FC = () => {
 
         {/* CTA Section */}
         <section className="min-h-[60vh] flex items-center justify-center text-center px-8 py-20">
-          <div
-            ref={ctaRef}
-            className="bg-gradient-to-br from-blue-600/90 via-cyan-600/80 to-emerald-600/90 backdrop-blur-xl border border-white/20 rounded-[2.5rem] p-12 lg:p-16 max-w-4xl w-full shadow-2xl will-change-transform"
-          >
+          <div className="bg-gradient-to-br from-blue-600/90 via-cyan-600/80 to-emerald-600/90 backdrop-blur-xl border border-white/20 rounded-[2.5rem] p-12 lg:p-16 max-w-4xl w-full shadow-2xl">
             <h2 className="text-3xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
               Ready to transform your
               <br />
