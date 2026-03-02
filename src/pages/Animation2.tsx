@@ -1,7 +1,10 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import qt2Video from '../assets/qt2.mov';
+import { useVideoScrub } from '../hooks/useVideoScrub';
 
-const SCROLL_PAUSE_DELAY_MS = 150;
+gsap.registerPlugin(ScrollTrigger);
 
 interface ContentSection {
   title: string;
@@ -10,7 +13,7 @@ interface ContentSection {
   position: 'left' | 'right';
 }
 
-const SECTIONS: ContentSection[] = [
+const SECTIONS: ReadonlyArray<ContentSection> = [
   {
     title: 'Voice-powered ticket creation',
     highlight: 'with AI transcription',
@@ -59,62 +62,55 @@ const SECTIONS: ContentSection[] = [
     desc: '— your data is protected with enterprise-grade security. Automatic backups, role-based access, and audit logs keep your business safe.',
     position: 'right',
   },
-];
+] as const;
 
 export const Animation2: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleSections, setVisibleSections] = useState<boolean[]>(
-    Array(SECTIONS.length).fill(false)
-  );
 
-  const playVideo = useCallback(() => {
-    videoRef.current?.play().catch(() => {});
-  }, []);
-
-  const pauseVideo = useCallback(() => {
-    videoRef.current?.pause();
-  }, []);
+  useVideoScrub({
+    videoRef,
+    scrollerRef: containerRef,
+    contentRef,
+  });
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      playVideo();
-      scrollTimeoutRef.current = setTimeout(() => {
-        pauseVideo();
-        scrollTimeoutRef.current = null;
-      }, SCROLL_PAUSE_DELAY_MS);
+    const ctx = gsap.context(() => {
+      sectionRefs.current.forEach((sectionEl, i) => {
+        if (!sectionEl) return;
+        const textBlock = sectionEl.querySelector('[data-anim="text"]');
+        if (!textBlock) return;
 
-      const newVisible = sectionRefs.current.map((ref) => {
-        if (!ref) return false;
-        const rect = ref.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const containerCenter =
-          containerRect.top + containerRect.height / 2;
-        return (
-          rect.top < containerCenter + 100 &&
-          rect.bottom > containerCenter - 100
+        const isLeft = SECTIONS[i].position === 'left';
+
+        gsap.fromTo(
+          textBlock,
+          { opacity: 0, x: isLeft ? -60 : 60, y: 30, force3D: true },
+          {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            force3D: true,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: sectionEl,
+              scroller: container,
+              start: 'top 80%',
+              end: 'top 30%',
+              scrub: 1.2,
+            },
+          }
         );
       });
-      setVisibleSections(newVisible);
-    };
+    }, container);
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [playVideo, pauseVideo]);
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div
@@ -126,9 +122,8 @@ export const Animation2: React.FC = () => {
           <video
             ref={videoRef}
             src={qt2Video}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover will-change-auto"
             muted
-            loop
             playsInline
             preload="auto"
           />
@@ -136,8 +131,8 @@ export const Animation2: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10">
-        <section className="min-h-[50vh] flex flex-col items-center justify-center text-center px-8 py-16">
+      <div ref={contentRef} className="relative z-10">
+        <section className="min-h-[70vh] flex flex-col items-center justify-center text-center px-8 py-16">
           <p className="text-lg text-white/70 mb-2 tracking-wide uppercase">
             QuickTicketAI
           </p>
@@ -157,7 +152,7 @@ export const Animation2: React.FC = () => {
             ref={(el) => {
               sectionRefs.current[index] = el as HTMLDivElement | null;
             }}
-            className="min-h-[60vh] flex items-center py-16 px-6 lg:px-12"
+            className="min-h-[70vh] flex items-center py-16 px-6 lg:px-12"
           >
             <div
               className={`max-w-4xl w-full ${
@@ -167,12 +162,9 @@ export const Animation2: React.FC = () => {
               }`}
             >
               <div
-                className={`max-w-lg transition-all duration-1000 ease-out ${
+                data-anim="text"
+                className={`max-w-lg will-change-transform ${
                   section.position === 'left' ? '' : 'ml-auto'
-                } ${
-                  visibleSections[index]
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
                 }`}
               >
                 <p className="text-2xl lg:text-3xl leading-relaxed">

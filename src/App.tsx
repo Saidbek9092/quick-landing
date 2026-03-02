@@ -1,12 +1,27 @@
 import { useState } from 'react';
 import { Animation1 } from './pages/Animation1';
 import { Animation2 } from './pages/Animation2';
+import { Animation3 } from './pages/Animation3';
 import './index.css';
 
-type Page = 'animation1' | 'animation2';
+type Page = 'animation1' | 'animation2' | 'animation3';
+
+const NAV_ITEMS: ReadonlyArray<{ key: Page; label: string }> = [
+  { key: 'animation1', label: 'Animation 1' },
+  { key: 'animation2', label: 'Animation 2' },
+  { key: 'animation3', label: 'Animation 3' },
+] as const;
+
+const PageComponent: Record<Page, React.FC> = {
+  animation1: Animation1,
+  animation2: Animation2,
+  animation3: Animation3,
+};
 
 const App = () => {
   const [activePage, setActivePage] = useState<Page>('animation1');
+
+  const ActiveComponent = PageComponent[activePage];
 
   return (
     <div className="h-screen flex flex-col">
@@ -16,32 +31,25 @@ const App = () => {
             QuickTicketAI
           </span>
           <div className="flex gap-1">
-            <button
-              onClick={() => setActivePage('animation1')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                activePage === 'animation1'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Animation 1
-            </button>
-            <button
-              onClick={() => setActivePage('animation2')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                activePage === 'animation2'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Animation 2
-            </button>
+            {NAV_ITEMS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setActivePage(key)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  activePage === key
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
 
       <main className="pt-14 flex-1">
-        {activePage === 'animation1' ? <Animation1 /> : <Animation2 />}
+        <ActiveComponent />
       </main>
     </div>
   );

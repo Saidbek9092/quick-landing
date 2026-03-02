@@ -1,7 +1,10 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import qt2Video from '../assets/qt2.mov';
+import { useVideoScrub } from '../hooks/useVideoScrub';
 
-const SCROLL_PAUSE_DELAY_MS = 150;
+gsap.registerPlugin(ScrollTrigger);
 
 interface ContentSection {
   left: string;
@@ -11,7 +14,7 @@ interface ContentSection {
   icon: string;
 }
 
-const SECTIONS: ContentSection[] = [
+const SECTIONS: ReadonlyArray<ContentSection> = [
   {
     left: 'Create job tickets',
     leftDesc:
@@ -48,60 +51,96 @@ const SECTIONS: ContentSection[] = [
       'Revenue trends, technician performance, and customer metrics help you make smarter decisions.',
     icon: '📊',
   },
-];
+] as const;
 
 export const Animation1: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleSections, setVisibleSections] = useState<boolean[]>(
-    Array(SECTIONS.length).fill(false)
-  );
 
-  const playVideo = useCallback(() => {
-    videoRef.current?.play().catch(() => {});
-  }, []);
-
-  const pauseVideo = useCallback(() => {
-    videoRef.current?.pause();
-  }, []);
+  useVideoScrub({
+    videoRef,
+    scrollerRef: containerRef,
+    contentRef,
+  });
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      playVideo();
-      scrollTimeoutRef.current = setTimeout(() => {
-        pauseVideo();
-        scrollTimeoutRef.current = null;
-      }, SCROLL_PAUSE_DELAY_MS);
+    const ctx = gsap.context(() => {
+      sectionRefs.current.forEach((sectionEl) => {
+        if (!sectionEl) return;
 
-      const newVisible = sectionRefs.current.map((ref) => {
-        if (!ref) return false;
-        const rect = ref.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        return (
-          rect.top < containerRect.bottom - 100 &&
-          rect.bottom > containerRect.top + 100
-        );
+        const leftCard = sectionEl.querySelector('[data-anim="left"]');
+        const centerIcon = sectionEl.querySelector('[data-anim="center"]');
+        const rightCard = sectionEl.querySelector('[data-anim="right"]');
+
+        if (leftCard) {
+          gsap.fromTo(
+            leftCard,
+            { opacity: 0, x: -80, force3D: true },
+            {
+              opacity: 1,
+              x: 0,
+              force3D: true,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: sectionEl,
+                scroller: container,
+                start: 'top 80%',
+                end: 'top 30%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
+
+        if (centerIcon) {
+          gsap.fromTo(
+            centerIcon,
+            { opacity: 0, scale: 0.3, force3D: true },
+            {
+              opacity: 1,
+              scale: 1,
+              force3D: true,
+              ease: 'back.out(1.7)',
+              scrollTrigger: {
+                trigger: sectionEl,
+                scroller: container,
+                start: 'top 75%',
+                end: 'top 35%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
+
+        if (rightCard) {
+          gsap.fromTo(
+            rightCard,
+            { opacity: 0, x: 80, force3D: true },
+            {
+              opacity: 1,
+              x: 0,
+              force3D: true,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: sectionEl,
+                scroller: container,
+                start: 'top 80%',
+                end: 'top 30%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
       });
-      setVisibleSections(newVisible);
-    };
+    }, container);
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [playVideo, pauseVideo]);
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div
@@ -113,9 +152,8 @@ export const Animation1: React.FC = () => {
           <video
             ref={videoRef}
             src={qt2Video}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover will-change-auto"
             muted
-            loop
             playsInline
             preload="auto"
           />
@@ -123,8 +161,8 @@ export const Animation1: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10">
-        <section className="min-h-[50vh] flex flex-col items-center justify-center text-center px-8 py-16">
+      <div ref={contentRef} className="relative z-10">
+        <section className="min-h-[80vh] flex flex-col items-center justify-center text-center px-8 py-16">
           <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-4 drop-shadow-sm tracking-tight">
             QuickTicketAI in Action
           </h1>
@@ -144,16 +182,10 @@ export const Animation1: React.FC = () => {
             ref={(el) => {
               sectionRefs.current[index] = el as HTMLDivElement | null;
             }}
-            className="min-h-[60vh] flex items-center py-16 px-6"
+            className="min-h-[70vh] flex items-center py-16 px-6"
           >
             <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12 items-center">
-              <div
-                className={`transition-all duration-700 ease-out ${
-                  visibleSections[index]
-                    ? 'opacity-100 translate-x-0'
-                    : 'opacity-0 -translate-x-20'
-                }`}
-              >
+              <div data-anim="left" className="will-change-transform">
                 <div className="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-gray-100/80 hover:shadow-2xl transition-shadow duration-300">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     {section.left}
@@ -165,24 +197,15 @@ export const Animation1: React.FC = () => {
               </div>
 
               <div
-                className={`flex justify-center transition-all duration-500 delay-100 ${
-                  visibleSections[index]
-                    ? 'opacity-100 scale-100'
-                    : 'opacity-0 scale-50'
-                }`}
+                data-anim="center"
+                className="flex justify-center will-change-transform"
               >
                 <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 flex items-center justify-center text-4xl lg:text-5xl shadow-2xl ring-4 ring-white/50">
                   {section.icon}
                 </div>
               </div>
 
-              <div
-                className={`transition-all duration-700 ease-out delay-200 ${
-                  visibleSections[index]
-                    ? 'opacity-100 translate-x-0'
-                    : 'opacity-0 translate-x-20'
-                }`}
-              >
+              <div data-anim="right" className="will-change-transform">
                 <div className="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-gray-100/80 hover:shadow-2xl transition-shadow duration-300">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
                     {section.right}
