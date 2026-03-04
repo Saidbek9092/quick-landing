@@ -1,0 +1,719 @@
+import React, { useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+import videoSrc from '../QuickTicketAI.mp4';
+import checkCircleSvg from '../assets/check-circle.svg';
+import iconMicrophone from '../assets/icons/icon-microphone.svg';
+import iconGlobe from '../assets/icons/icon-globe.svg';
+import iconDocument from '../assets/icons/icon-document.svg';
+import iconSync from '../assets/icons/icon-sync.svg';
+import iconStars from '../assets/icons/icon-stars.svg';
+import iconCloud from '../assets/icons/icon-cloud.svg';
+import iconTicket from '../assets/icons/icon-ticket.svg';
+import iconChart from '../assets/icons/icon-chart.svg';
+import iconGraph from '../assets/icons/icon-graph.svg';
+
+gsap.registerPlugin(ScrollTrigger);
+
+interface FeatureCard {
+  readonly heading: string;
+  readonly supporting: string;
+  readonly checkItems: ReadonlyArray<string>;
+  readonly position: 'left' | 'right';
+}
+
+interface GridFeature {
+  readonly title: string;
+  readonly description: string;
+  readonly icon: string;
+}
+
+const FEATURE_CARDS: ReadonlyArray<FeatureCard> = [
+  {
+    heading: 'Convert jobs to invoices',
+    supporting:
+      'Automatically prepare invoice-ready summaries from completed job tickets and approved work.',
+    checkItems: [
+      'Generate invoice-ready job data',
+      'Reduce billing mistakes and missing information',
+      'Speed up approval and billing cycles',
+    ],
+    position: 'left',
+  },
+  {
+    heading: 'Monitor jobs and teams live',
+    supporting:
+      'Follow every job from creation to completion with live updates from your field technicians.',
+    checkItems: [
+      'Live job status and progress updates',
+      'Technician activity and assignment tracking',
+      'Instant notifications for changes and approvals',
+    ],
+    position: 'right',
+  },
+  {
+    heading: 'Convert jobs to invoices',
+    supporting:
+      'Automatically prepare invoice-ready summaries from completed job tickets and approved work.',
+    checkItems: [
+      'Generate invoice-ready job data',
+      'Reduce billing mistakes and missing information',
+      'Speed up approval and billing cycles',
+    ],
+    position: 'left',
+  },
+] as const;
+
+const GRID_FEATURES: ReadonlyArray<GridFeature> = [
+  {
+    title: 'Voice Ticketing',
+    description:
+      'Log job tickets hands-free using AI voice capture — ideal for technicians on site.',
+    icon: iconMicrophone,
+  },
+  {
+    title: 'Multilingual Support',
+    description:
+      'Create and review tickets in multiple languages for global and distributed teams.',
+    icon: iconGlobe,
+  },
+  {
+    title: 'Automated Invoicing',
+    description:
+      'Generate invoice-ready data directly from approved job tickets.',
+    icon: iconDocument,
+  },
+  {
+    title: 'Real-Time Sync',
+    description:
+      'Keep all ticket data instantly synced across devices, teams, and roles.',
+    icon: iconSync,
+  },
+  {
+    title: 'AI-Powered Insights',
+    description:
+      'Understand job trends, technician performance, and billing accuracy with AI analytics.',
+    icon: iconStars,
+  },
+  {
+    title: 'Secure Cloud Storage',
+    description:
+      'Protect your data with encryption, backups, and role-based access control.',
+    icon: iconCloud,
+  },
+  {
+    title: 'Manual Ticketing',
+    description:
+      'Create and edit tickets manually when voice input is not available.',
+    icon: iconTicket,
+  },
+  {
+    title: 'Dashboard Reporting',
+    description:
+      'View operational and financial performance in one unified dashboard.',
+    icon: iconChart,
+  },
+  {
+    title: 'High Volume Ready',
+    description:
+      'Built to support large teams and high job volumes with scalable infrastructure.',
+    icon: iconGraph,
+  },
+] as const;
+
+const NAV_LINKS: ReadonlyArray<string> = ['How it works', 'Features'] as const;
+
+const CheckIcon: React.FC = () => (
+  <img src={checkCircleSvg} alt="" width={24} height={24} className="shrink-0" />
+);
+
+export const QuickTicketLandingPage: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const featuresHeaderRef = useRef<HTMLDivElement>(null);
+  const featureItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ctaRef = useRef<HTMLElement>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const SCROLL_PAUSE_DELAY_MS = 150;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = contentRef.current;
+    const video = videoRef.current;
+    if (!container || !content || !video) return;
+
+    const lenis = new Lenis({
+      wrapper: container,
+      content: content,
+      smoothWheel: true,
+      lerp: 0.1,
+      wheelMultiplier: 1,
+    });
+
+    lenis.on('scroll', ScrollTrigger.update);
+
+    lenis.on('scroll', () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      video.play().catch(() => {});
+      scrollTimeoutRef.current = setTimeout(() => {
+        video.pause();
+        scrollTimeoutRef.current = null;
+      }, SCROLL_PAUSE_DELAY_MS);
+    });
+
+    const lenisRaf = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(lenisRaf);
+    gsap.ticker.lagSmoothing(0);
+
+    const ctx = gsap.context(() => {
+      if (heroRef.current) {
+        const heroContent = heroRef.current.querySelector('[data-anim="hero-content"]');
+        if (heroContent) {
+          gsap.fromTo(
+            heroContent,
+            { opacity: 0, y: 40, force3D: true },
+            { opacity: 1, y: 0, force3D: true, duration: 1.2, ease: 'power3.out', delay: 0.3 }
+          );
+        }
+
+        gsap.fromTo(
+          heroRef.current,
+          { opacity: 1 },
+          {
+            opacity: 0,
+            ease: 'power2.in',
+            scrollTrigger: {
+              trigger: heroRef.current,
+              scroller: container,
+              start: 'top top',
+              end: 'top -30%',
+              scrub: true,
+            },
+          }
+        );
+      }
+
+      cardRefs.current.forEach((cardEl, i) => {
+        if (!cardEl) return;
+        const card = cardEl.querySelector('[data-anim="card"]');
+        if (!card) return;
+
+        const isLeft = FEATURE_CARDS[i].position === 'left';
+
+        gsap.fromTo(
+          card,
+          { opacity: 0, x: isLeft ? -120 : 120, y: 30, scale: 0.92, force3D: true },
+          {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            force3D: true,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: cardEl,
+              scroller: container,
+              start: 'top 85%',
+              end: 'top 35%',
+              scrub: 1.5,
+            },
+          }
+        );
+
+        const checkItems = card.querySelectorAll('[data-anim="check-item"]');
+        checkItems.forEach((item, ci) => {
+          gsap.fromTo(
+            item,
+            { opacity: 0, x: isLeft ? -20 : 20, force3D: true },
+            {
+              opacity: 1,
+              x: 0,
+              force3D: true,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: cardEl,
+                scroller: container,
+                start: `top ${70 - ci * 5}%`,
+                end: `top ${30 - ci * 5}%`,
+                scrub: 1.2,
+              },
+            }
+          );
+        });
+      });
+
+      if (featuresHeaderRef.current) {
+        gsap.fromTo(
+          featuresHeaderRef.current,
+          { opacity: 0, y: 60, force3D: true },
+          {
+            opacity: 1,
+            y: 0,
+            force3D: true,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: featuresHeaderRef.current,
+              scroller: container,
+              start: 'top 85%',
+              end: 'top 50%',
+              scrub: 1.2,
+            },
+          }
+        );
+      }
+
+      featureItemRefs.current.forEach((itemEl) => {
+        if (!itemEl) return;
+
+        gsap.fromTo(
+          itemEl,
+          { opacity: 0, y: 50, scale: 0.9, force3D: true },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            force3D: true,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: itemEl,
+              scroller: container,
+              start: 'top 90%',
+              end: 'top 60%',
+              scrub: 1,
+            },
+          }
+        );
+      });
+
+      if (ctaRef.current) {
+        const ctaLeft = ctaRef.current.querySelector('[data-anim="cta-left"]');
+        const ctaRight = ctaRef.current.querySelector('[data-anim="cta-right"]');
+
+        if (ctaLeft) {
+          gsap.fromTo(
+            ctaLeft,
+            { opacity: 0, x: -60, force3D: true },
+            {
+              opacity: 1,
+              x: 0,
+              force3D: true,
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: ctaRef.current,
+                scroller: container,
+                start: 'top 80%',
+                end: 'top 40%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
+
+        if (ctaRight) {
+          gsap.fromTo(
+            ctaRight,
+            { opacity: 0, x: 60, scale: 0.9, force3D: true },
+            {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              force3D: true,
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: ctaRef.current,
+                scroller: container,
+                start: 'top 75%',
+                end: 'top 35%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
+      }
+    }, container);
+
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      gsap.ticker.remove(lenisRaf);
+      ctx.revert();
+      lenis.destroy();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="h-screen overflow-y-auto overflow-x-hidden relative"
+    >
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          className="w-full h-full object-cover"
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+      </div>
+
+      <div ref={contentRef} className="relative z-10">
+        <header className="relative z-50 bg-transparent">
+          <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
+            <span
+              className="text-[18px] font-semibold leading-[28px]"
+              style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
+            >
+              QuickTicketAI
+            </span>
+
+            <nav className="flex items-center gap-8">
+              {NAV_LINKS.map((link) => (
+                <button
+                  key={link}
+                  className="text-[16px] font-medium leading-[24px] cursor-pointer bg-transparent border-none"
+                  style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                >
+                  {link}
+                </button>
+              ))}
+            </nav>
+
+            <button
+              className="px-[18px] py-[10px] rounded-[8px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none"
+              style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
+            >
+              Register for early access
+            </button>
+          </div>
+        </header>
+
+        <section
+          ref={heroRef}
+          className="min-h-[calc(100vh-72px)] flex items-start justify-center pt-[60px]"
+        >
+          <div
+            data-anim="hero-content"
+            className="flex flex-col items-center text-center max-w-[624px] px-8"
+          >
+            <h1
+              className="text-[48px] font-bold leading-[60px] tracking-[-0.02em] mb-6"
+              style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
+            >
+              Simplify Job Ticketing and Invoicing with AI
+            </h1>
+
+            <p
+              className="text-[18px] font-normal leading-[28px] mb-10"
+              style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+            >
+              QuickTicketAI helps energy and field service teams create, track,
+              and manage job tickets effortlessly — in any language
+            </p>
+
+            <button
+              className="px-[22px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none"
+              style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
+            >
+              Register for early access
+            </button>
+          </div>
+        </section>
+
+        {FEATURE_CARDS.map((card, index) => (
+          <section
+            key={index}
+            ref={(el) => {
+              cardRefs.current[index] = el as HTMLDivElement | null;
+            }}
+            className="min-h-screen flex items-center px-8 lg:px-0"
+          >
+            <div
+              className={`w-full max-w-[1280px] mx-auto ${
+                card.position === 'left'
+                  ? 'flex justify-start pl-[80px]'
+                  : 'flex justify-end pr-[80px]'
+              }`}
+            >
+              <div
+                data-anim="card"
+                className="will-change-transform rounded-[24px] p-8 max-w-[420px]"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  boxShadow: '0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)',
+                }}
+              >
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
+                    <h2
+                      className="text-[24px] font-semibold leading-[32px]"
+                      style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
+                    >
+                      {card.heading}
+                    </h2>
+                    <p
+                      className="text-[16px] font-normal leading-[24px]"
+                      style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                    >
+                      {card.supporting}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    {card.checkItems.map((item, ci) => (
+                      <div
+                        key={ci}
+                        data-anim="check-item"
+                        className="flex items-start gap-3 will-change-transform"
+                      >
+                        <CheckIcon />
+                        <span
+                          className="text-[16px] font-normal leading-[24px]"
+                          style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                        >
+                          {item}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        ))}
+
+        <section
+          className="flex flex-col justify-center min-h-screen py-24 px-8"
+          style={{ backgroundColor: '#1D2E8C' }}
+        >
+          <div className="max-w-[1280px] mx-auto w-full">
+            <div
+              ref={featuresHeaderRef}
+              className="flex flex-col items-center gap-5 mb-16 will-change-transform"
+            >
+              <h2
+                className="text-4xl font-bold leading-[1.22] tracking-[-2%] text-center"
+                style={{ color: '#FFFFFF', fontFamily: 'Manrope, sans-serif' }}
+              >
+                Main features built for field service teams
+              </h2>
+              <p
+                className="text-xl font-medium leading-[1.5] text-center max-w-[768px]"
+                style={{ color: '#A2B0FF', fontFamily: 'Manrope, sans-serif' }}
+              >
+                Core tools to create, manage, and close job tickets faster — with
+                AI, real-time collaboration, and built-in invoicing.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-16 px-8">
+              {[0, 1, 2].map((row) => (
+                <div key={row} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {GRID_FEATURES.slice(row * 3, row * 3 + 3).map(
+                    (feature, colIdx) => {
+                      const globalIdx = row * 3 + colIdx;
+                      return (
+                        <div
+                          key={globalIdx}
+                          ref={(el) => {
+                            featureItemRefs.current[globalIdx] =
+                              el as HTMLDivElement | null;
+                          }}
+                          className="flex flex-col items-center gap-5 will-change-transform"
+                        >
+                          <div
+                            className="w-12 h-12 rounded-[28px] flex items-center justify-center"
+                            style={{
+                              backgroundColor: '#304CE8',
+                              border: '8px solid #263BB5',
+                            }}
+                          >
+                            <img src={feature.icon} alt="" className="w-6 h-6" />
+                          </div>
+                          <div className="flex flex-col items-center gap-2">
+                            <h3
+                              className="text-xl font-bold leading-[1.5] text-center"
+                              style={{
+                                color: '#FFFFFF',
+                                fontFamily: 'Manrope, sans-serif',
+                              }}
+                            >
+                              {feature.title}
+                            </h3>
+                            <p
+                              className="text-base font-normal leading-[1.5] text-center"
+                              style={{
+                                color: '#A2B0FF',
+                                fontFamily: 'Manrope, sans-serif',
+                              }}
+                            >
+                              {feature.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          ref={ctaRef}
+          className="relative py-[96px] bg-white"
+        >
+          <div className="max-w-[1280px] mx-auto px-8 w-full">
+            <div className="flex items-center justify-between gap-[64px]">
+              <div data-anim="cta-left" className="will-change-transform max-w-[560px]">
+                <h2
+                  className="text-[36px] font-semibold leading-[44px] tracking-[-0.02em] mb-5"
+                  style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
+                >
+                  Transform the way you manage job tickets
+                </h2>
+                <p
+                  className="text-[18px] font-normal leading-[28px] mb-10"
+                  style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                >
+                  From voice-based ticket creation to automated invoicing,
+                  QuickTicketAI helps field teams manage jobs faster and with
+                  fewer errors.
+                </p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-[320px] px-[14px] py-[12px] rounded-[8px] text-[16px] leading-[24px] outline-none"
+                    style={{
+                      border: '1px solid #D0D5DD',
+                      color: '#101828',
+                      fontFamily: 'Manrope, sans-serif',
+                      boxShadow: '0px 1px 2px rgba(16, 24, 40, 0.05)',
+                    }}
+                  />
+                  <button
+                    className="px-[18px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none"
+                    style={{
+                      backgroundColor: '#3553FF',
+                      fontFamily: 'Manrope, sans-serif',
+                    }}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+
+              <div
+                data-anim="cta-right"
+                className="will-change-transform flex-shrink-0"
+              >
+                <div className="relative w-[280px] h-[572px]">
+                  <div
+                    className="absolute inset-0 rounded-[44px] overflow-hidden"
+                    style={{
+                      backgroundColor: '#1A1A1A',
+                      boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    }}
+                  >
+                    <div
+                      className="absolute top-[3px] left-[3px] right-[3px] bottom-[3px] rounded-[41px] overflow-hidden"
+                      style={{ backgroundColor: '#FFFFFF' }}
+                    >
+                      <div className="absolute top-[12px] left-1/2 -translate-x-1/2 w-[90px] h-[28px] bg-[#1A1A1A] rounded-full z-10" />
+                      <div className="flex flex-col h-full pt-[52px] px-[20px]">
+                        <div className="flex items-center gap-2 mb-[32px]">
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="#535862" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <span
+                            className="text-[14px] font-medium"
+                            style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                          >
+                            Create with voice
+                          </span>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center justify-center relative">
+                          <div
+                            className="w-[180px] h-[180px] rounded-full"
+                            style={{
+                              background: 'conic-gradient(from 180deg at 50% 50%, #FF9A9E 0deg, #FECFEF 60deg, #A8EDEA 120deg, #5BCEFA 180deg, #B8A9FA 240deg, #FF9A9E 360deg)',
+                            }}
+                          />
+                        </div>
+
+                        <p
+                          className="text-[12px] leading-[18px] text-center mb-[24px] px-[8px]"
+                          style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+                        >
+                          Customer company name is: Sugabs Team and Customer name is: Jay Hargutson. Location is at: 4517 Washington Ave, Manchester, Kentucky 39495
+                        </p>
+
+                        <div className="flex items-center justify-center gap-[20px] mb-[32px]">
+                          <div
+                            className="w-[44px] h-[44px] rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: '#F2F4F7' }}
+                          >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                              <rect x="5" y="5" width="10" height="10" rx="1" stroke="#535862" strokeWidth="1.5"/>
+                            </svg>
+                          </div>
+                          <div
+                            className="w-[56px] h-[56px] rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: '#3553FF' }}
+                          >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                              <path d="M12 2C10.3431 2 9 3.34315 9 5V12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V5C15 3.34315 13.6569 2 12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M12 19V22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div
+                            className="w-[44px] h-[44px] rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: '#F2F4F7' }}
+                          >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                              <path d="M6 6L14 14M6 14L14 6" stroke="#535862" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="bg-white border-t" style={{ borderColor: '#EAECF0' }}>
+          <div className="max-w-[1280px] mx-auto px-8 py-[48px] flex items-center justify-between">
+            <span
+              className="text-[18px] font-semibold leading-[28px]"
+              style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
+            >
+              QuickTicketAI
+            </span>
+            <span
+              className="text-[16px] font-normal leading-[24px]"
+              style={{ color: '#667085', fontFamily: 'Manrope, sans-serif' }}
+            >
+              © 2026 QuickTicketAI. All rights reserved.
+            </span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
