@@ -1,4 +1,4 @@
-import { QuickTicketLandingPage } from './pages/QuickTicketLandingPage';
+import { QuickTicketLandingPage } from './pages';
 import './index.css';
 
 const App = () => {

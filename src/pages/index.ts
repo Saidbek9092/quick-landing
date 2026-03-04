@@ -1,0 +1,2 @@
+export { QuickTicketLandingPage } from './QuickTicketLandingPage';
+

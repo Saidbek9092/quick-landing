@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import videoSrc from '../QuickTicketAI.mp4';
+import videoSrc from '../assets/video/quick-ticket.mp4';
 import checkCircleSvg from '../assets/check-circle.svg';
 import iconMicrophone from '../assets/icons/icon-microphone.svg';
 import iconGlobe from '../assets/icons/icon-globe.svg';
