@@ -387,12 +387,15 @@ export const QuickTicketLandingPage: React.FC = () => {
               ))}
             </nav>
 
-            <button
-              className="px-[18px] py-[10px] rounded-[8px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none"
+            <a
+              href="https://app.quickticketai.com/register"
+              target="_blank"
+              rel="noreferrer"
+              className="px-[18px] py-[10px] rounded-[8px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
               style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
             >
               Register for early access
-            </button>
+            </a>
           </div>
         </header>
 
@@ -419,12 +422,15 @@ export const QuickTicketLandingPage: React.FC = () => {
               and manage job tickets effortlessly — in any language
             </p>
 
-            <button
-              className="px-[22px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none"
+            <a
+              href="https://app.quickticketai.com/register"
+              target="_blank"
+              rel="noreferrer"
+              className="px-[22px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none inline-flex items-center justify-center"
               style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
             >
               Register for early access
-            </button>
+            </a>
           </div>
         </section>
 
