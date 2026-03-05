@@ -231,12 +231,10 @@ export const QuickTicketLandingPage: React.FC = () => {
         );
       }
 
-      cardRefs.current.forEach((cardEl, i) => {
+      cardRefs.current.forEach((cardEl) => {
         if (!cardEl) return;
         const card = cardEl.querySelector('[data-anim="card"]');
         if (!card) return;
-
-        const isLeft = FEATURE_CARDS[i].position === 'left';
 
         gsap.fromTo(
           card,
