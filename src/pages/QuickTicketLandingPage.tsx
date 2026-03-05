@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import videoSrc from '../assets/video/quick-ticket.mp4';
 import checkCircleSvg from '../assets/check-circle.svg';
 import iconMicrophone from '../assets/icons/icon-microphone.svg';
 import iconGlobe from '../assets/icons/icon-globe.svg';
@@ -129,7 +128,7 @@ const CheckIcon: React.FC = () => (
 );
 
 export const QuickTicketLandingPage: React.FC = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -137,14 +136,33 @@ export const QuickTicketLandingPage: React.FC = () => {
   const featuresHeaderRef = useRef<HTMLDivElement>(null);
   const featureItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const ctaRef = useRef<HTMLElement>(null);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const SCROLL_PAUSE_DELAY_MS = 150;
+
+  const frameCount = 203; // Based on ffmpeg output
+  const imagesRef = useRef<HTMLImageElement[]>([]);
 
   useEffect(() => {
     const container = containerRef.current;
     const content = contentRef.current;
-    const video = videoRef.current;
-    if (!container || !content || !video) return;
+    const canvas = canvasRef.current;
+    if (!container || !content || !canvas) return;
+
+    // 1. Preload images
+    const currentFrame = (index: number) =>
+      `/video-frames/frame_${(index + 1).toString().padStart(4, '0')}.jpg`;
+
+    for (let i = 0; i < frameCount; i++) {
+      const img = new Image();
+      img.src = currentFrame(i);
+      imagesRef.current.push(img);
+    }
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    // Draw the first frame initially when loaded
+    imagesRef.current[0].onload = () => {
+      context.drawImage(imagesRef.current[0], 0, 0, canvas.width, canvas.height);
+    };
 
     const lenis = new Lenis({
       wrapper: container,
@@ -156,17 +174,6 @@ export const QuickTicketLandingPage: React.FC = () => {
 
     lenis.on('scroll', ScrollTrigger.update);
 
-    lenis.on('scroll', () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      video.play().catch(() => {});
-      scrollTimeoutRef.current = setTimeout(() => {
-        video.pause();
-        scrollTimeoutRef.current = null;
-      }, SCROLL_PAUSE_DELAY_MS);
-    });
-
     const lenisRaf = (time: number) => {
       lenis.raf(time * 1000);
     };
@@ -174,6 +181,29 @@ export const QuickTicketLandingPage: React.FC = () => {
     gsap.ticker.lagSmoothing(0);
 
     const ctx = gsap.context(() => {
+      // Setup the scrolling object
+      const frameObj = { frame: 0 };
+
+      gsap.to(frameObj, {
+        frame: frameCount - 1,
+        snap: 'frame',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: content,
+          scroller: container,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0, // 0 means lock exactly to scrollbar (no smoothing delay from scrub itself, lenis handles smoothing)
+        },
+        onUpdate: () => {
+          const img = imagesRef.current[frameObj.frame];
+          if (img && img.complete) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+        },
+      });
+
       if (heroRef.current) {
         const heroContent = heroRef.current.querySelector('[data-anim="hero-content"]');
         if (heroContent) {
@@ -341,7 +371,6 @@ export const QuickTicketLandingPage: React.FC = () => {
     }, container);
 
     return () => {
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
       gsap.ticker.remove(lenisRaf);
       ctx.revert();
       lenis.destroy();
@@ -353,15 +382,12 @@ export const QuickTicketLandingPage: React.FC = () => {
       ref={containerRef}
       className="h-screen overflow-y-auto overflow-x-hidden relative"
     >
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <video
-          ref={videoRef}
-          src={videoSrc}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+        <canvas
+          ref={canvasRef}
+          width={1920}
+          height={1080}
           className="w-full h-full object-cover"
-          muted
-          loop
-          playsInline
-          preload="auto"
         />
       </div>
 
@@ -443,11 +469,10 @@ export const QuickTicketLandingPage: React.FC = () => {
             className="min-h-screen flex items-center px-8 lg:px-0"
           >
             <div
-              className={`w-full max-w-[1280px] mx-auto ${
-                card.position === 'left'
-                  ? 'flex justify-start pl-[80px]'
-                  : 'flex justify-end pr-[80px]'
-              }`}
+              className={`w-full max-w-[1280px] mx-auto ${card.position === 'left'
+                ? 'flex justify-start pl-[80px]'
+                : 'flex justify-end pr-[80px]'
+                }`}
             >
               <div
                 data-anim="card"
@@ -639,7 +664,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                       <div className="flex flex-col h-full pt-[52px] px-[20px]">
                         <div className="flex items-center gap-2 mb-[32px]">
                           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M12.5 15L7.5 10L12.5 5" stroke="#535862" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12.5 15L7.5 10L12.5 5" stroke="#535862" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                           <span
                             className="text-[14px] font-medium"
@@ -671,7 +696,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                             style={{ backgroundColor: '#F2F4F7' }}
                           >
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                              <rect x="5" y="5" width="10" height="10" rx="1" stroke="#535862" strokeWidth="1.5"/>
+                              <rect x="5" y="5" width="10" height="10" rx="1" stroke="#535862" strokeWidth="1.5" />
                             </svg>
                           </div>
                           <div
@@ -679,9 +704,9 @@ export const QuickTicketLandingPage: React.FC = () => {
                             style={{ backgroundColor: '#3553FF' }}
                           >
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                              <path d="M12 2C10.3431 2 9 3.34315 9 5V12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V5C15 3.34315 13.6569 2 12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M12 19V22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M12 2C10.3431 2 9 3.34315 9 5V12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V5C15 3.34315 13.6569 2 12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M12 19V22" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                           </div>
                           <div
@@ -689,7 +714,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                             style={{ backgroundColor: '#F2F4F7' }}
                           >
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                              <path d="M6 6L14 14M6 14L14 6" stroke="#535862" strokeWidth="1.5" strokeLinecap="round"/>
+                              <path d="M6 6L14 14M6 14L14 6" stroke="#535862" strokeWidth="1.5" strokeLinecap="round" />
                             </svg>
                           </div>
                         </div>
