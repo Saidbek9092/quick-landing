@@ -160,9 +160,14 @@ export const QuickTicketLandingPage: React.FC = () => {
     if (!context) return;
 
     // Draw the first frame initially when loaded
-    imagesRef.current[0].onload = () => {
-      context.drawImage(imagesRef.current[0], 0, 0, canvas.width, canvas.height);
-    };
+    const firstImg = imagesRef.current[0];
+    if (firstImg.complete) {
+      context.drawImage(firstImg, 0, 0, canvas.width, canvas.height);
+    } else {
+      firstImg.onload = () => {
+        context.drawImage(firstImg, 0, 0, canvas.width, canvas.height);
+      };
+    }
 
     const lenis = new Lenis({
       wrapper: container,
