@@ -240,10 +240,9 @@ export const QuickTicketLandingPage: React.FC = () => {
 
         gsap.fromTo(
           card,
-          { opacity: 0, x: isLeft ? -120 : 120, y: 30, scale: 0.92, force3D: true },
+          { opacity: 0, y: 40, scale: 0.95, force3D: true },
           {
             opacity: 1,
-            x: 0,
             y: 0,
             scale: 1,
             force3D: true,
@@ -252,27 +251,48 @@ export const QuickTicketLandingPage: React.FC = () => {
               trigger: cardEl,
               scroller: container,
               start: 'top 85%',
-              end: 'top 35%',
+              end: 'top 40%',
               scrub: 1.5,
             },
           }
         );
 
-        const checkItems = card.querySelectorAll('[data-anim="check-item"]');
-        checkItems.forEach((item, ci) => {
+        const cardHeader = card.querySelector('[data-anim="card-header"]');
+        if (cardHeader) {
           gsap.fromTo(
-            item,
-            { opacity: 0, x: isLeft ? -20 : 20, force3D: true },
+            cardHeader,
+            { opacity: 0, y: 25, force3D: true },
             {
               opacity: 1,
-              x: 0,
+              y: 0,
               force3D: true,
               ease: 'power2.out',
               scrollTrigger: {
                 trigger: cardEl,
                 scroller: container,
-                start: `top ${70 - ci * 5}%`,
-                end: `top ${30 - ci * 5}%`,
+                start: 'top 75%',
+                end: 'top 40%',
+                scrub: 1.2,
+              },
+            }
+          );
+        }
+
+        const checkItems = card.querySelectorAll('[data-anim="check-item"]');
+        checkItems.forEach((item, ci) => {
+          gsap.fromTo(
+            item,
+            { opacity: 0, y: 15, force3D: true },
+            {
+              opacity: 1,
+              y: 0,
+              force3D: true,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: cardEl,
+                scroller: container,
+                start: `top ${65 - ci * 7}%`,
+                end: `top ${30 - ci * 7}%`,
                 scrub: 1.2,
               },
             }
@@ -476,29 +496,30 @@ export const QuickTicketLandingPage: React.FC = () => {
             >
               <div
                 data-anim="card"
-                className="will-change-transform rounded-[24px] p-8 max-w-[420px]"
+                className="will-change-transform rounded-[28px] p-10 max-w-[520px]"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   boxShadow: '0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)',
+                  backdropFilter: 'blur(12px)',
                 }}
               >
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-8">
+                  <div className="flex flex-col gap-4" data-anim="card-header">
                     <h2
-                      className="text-[24px] font-semibold leading-[32px]"
+                      className="text-[30px] font-semibold leading-[40px]"
                       style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
                     >
                       {card.heading}
                     </h2>
                     <p
-                      className="text-[16px] font-normal leading-[24px]"
+                      className="text-[18px] font-normal leading-[28px]"
                       style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                     >
                       {card.supporting}
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-5">
                     {card.checkItems.map((item, ci) => (
                       <div
                         key={ci}
@@ -507,7 +528,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                       >
                         <CheckIcon />
                         <span
-                          className="text-[16px] font-normal leading-[24px]"
+                          className="text-[17px] font-normal leading-[26px]"
                           style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                         >
                           {item}
