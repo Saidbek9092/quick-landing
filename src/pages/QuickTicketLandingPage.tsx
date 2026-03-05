@@ -405,12 +405,21 @@ export const QuickTicketLandingPage: React.FC = () => {
       ref={containerRef}
       className="h-screen overflow-y-auto overflow-x-hidden relative"
     >
-      <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+      <div
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundColor: '#EBEBEB',
+          backgroundImage: 'url(/video-frames/frame_0001.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <canvas
           ref={canvasRef}
           width={1920}
           height={1080}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover mix-blend-normal"
         />
       </div>
 
