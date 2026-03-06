@@ -199,6 +199,7 @@ export const QuickTicketLandingPage: React.FC = () => {
     const ctx = gsap.context(() => {
       // Setup the scrolling object
       const frameObj = { frame: 0 };
+      let lastDrawnFrame = -1;
 
       gsap.to(frameObj, {
         frame: frameCount - 1,
@@ -213,10 +214,14 @@ export const QuickTicketLandingPage: React.FC = () => {
           scrub: 0, // 0 means lock exactly to scrollbar (no smoothing delay from scrub itself, lenis handles smoothing)
         },
         onUpdate: () => {
-          const img = imagesRef.current[frameObj.frame];
-          if (img && img.complete) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const frameIndex = Math.round(frameObj.frame);
+          if (frameIndex !== lastDrawnFrame) {
+            const img = imagesRef.current[frameIndex];
+            if (img && img.complete) {
+              context.clearRect(0, 0, canvas.width, canvas.height);
+              context.drawImage(img, 0, 0, canvas.width, canvas.height);
+              lastDrawnFrame = frameIndex;
+            }
           }
         },
       });
