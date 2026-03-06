@@ -208,7 +208,8 @@ export const QuickTicketLandingPage: React.FC = () => {
           trigger: content,
           scroller: container,
           start: 'top top',
-          end: 'bottom bottom',
+          endTrigger: featuresSectionRef.current || undefined,
+          end: 'top bottom',
           scrub: 0, // 0 means lock exactly to scrollbar (no smoothing delay from scrub itself, lenis handles smoothing)
         },
         onUpdate: () => {
@@ -452,35 +453,35 @@ export const QuickTicketLandingPage: React.FC = () => {
 
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#EAECF0]/60">
         <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
-            <span
-              className="text-[24px] font-semibold leading-[32px] tracking-[0.005em]"
-              style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
-            >
-              QuickTicketAI
-            </span>
+          <span
+            className="text-[24px] font-semibold leading-[32px] tracking-[0.005em]"
+            style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
+          >
+            QuickTicketAI
+          </span>
 
-            <nav className="flex items-center gap-8">
-              {NAV_LINKS.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={() => handleNavClick(link.target)}
-                  className="text-[16px] font-bold leading-[24px] tracking-[0.005em] cursor-pointer bg-transparent border-none"
-                  style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
-                >
-                  {link.label}
-                </button>
-              ))}
-            </nav>
+          <nav className="flex items-center gap-8">
+            {NAV_LINKS.map((link) => (
+              <button
+                key={link.label}
+                onClick={() => handleNavClick(link.target)}
+                className="text-[16px] font-bold leading-[24px] tracking-[0.005em] cursor-pointer bg-transparent border-none"
+                style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
 
-            <a
-              href="https://app.quickticketai.com/register"
-              target="_blank"
-              rel="noreferrer"
-              className="w-[263px] h-[56px] px-[24px] py-[14px] rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
-              style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
-            >
-              Register for early access
-            </a>
+          <a
+            href="https://app.quickticketai.com/register"
+            target="_blank"
+            rel="noreferrer"
+            className="w-[263px] h-[56px] px-[24px] py-[14px] rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
+            style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
+          >
+            Register for early access
+          </a>
         </div>
       </header>
 
@@ -624,7 +625,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                           }}
                           className="flex flex-col items-center gap-5 will-change-transform"
                         >
-                        <img src={feature.icon} alt="" className="w-14 h-14" />
+                          <img src={feature.icon} alt="" className="w-14 h-14" />
                           <div className="flex flex-col items-center gap-2">
                             <h3
                               className="text-xl font-bold leading-[1.5] text-center"
