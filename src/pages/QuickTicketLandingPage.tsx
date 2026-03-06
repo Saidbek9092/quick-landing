@@ -121,7 +121,15 @@ const GRID_FEATURES: ReadonlyArray<GridFeature> = [
   },
 ] as const;
 
-const NAV_LINKS: ReadonlyArray<string> = ['How it works', 'Features'] as const;
+interface NavLink {
+  readonly label: string;
+  readonly target: 'how-it-works' | 'features';
+}
+
+const NAV_LINKS: ReadonlyArray<NavLink> = [
+  { label: 'How it works', target: 'how-it-works' },
+  { label: 'Features', target: 'features' },
+] as const;
 
 const CheckIcon: React.FC = () => (
   <img src={checkCircleSvg} alt="" width={24} height={24} className="shrink-0" />
@@ -136,6 +144,8 @@ export const QuickTicketLandingPage: React.FC = () => {
   const featuresHeaderRef = useRef<HTMLDivElement>(null);
   const featureItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const ctaRef = useRef<HTMLElement>(null);
+  const lenisRef = useRef<Lenis | null>(null);
+  const featuresSectionRef = useRef<HTMLElement | null>(null);
 
   const frameCount = 203; // Based on ffmpeg output
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -177,6 +187,7 @@ export const QuickTicketLandingPage: React.FC = () => {
       wheelMultiplier: 1,
     });
 
+    lenisRef.current = lenis;
     lenis.on('scroll', ScrollTrigger.update);
 
     const lenisRaf = (time: number) => {
@@ -397,8 +408,24 @@ export const QuickTicketLandingPage: React.FC = () => {
       gsap.ticker.remove(lenisRaf);
       ctx.revert();
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
+
+  const handleNavClick = (target: NavLink['target']) => {
+    const lenis = lenisRef.current;
+    const container = containerRef.current;
+    if (!lenis || !container) return;
+
+    const targetEl =
+      target === 'how-it-works'
+        ? cardRefs.current[0]
+        : featuresSectionRef.current;
+
+    if (!targetEl) return;
+
+    lenis.scrollTo(targetEl, { offset: -72 });
+  };
 
   return (
     <div
@@ -423,9 +450,8 @@ export const QuickTicketLandingPage: React.FC = () => {
         />
       </div>
 
-      <div ref={contentRef} className="relative z-10">
-        <header className="relative z-50 bg-transparent">
-          <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#EAECF0]/60">
+        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
             <span
               className="text-[18px] font-semibold leading-[28px]"
               style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
@@ -436,11 +462,12 @@ export const QuickTicketLandingPage: React.FC = () => {
             <nav className="flex items-center gap-8">
               {NAV_LINKS.map((link) => (
                 <button
-                  key={link}
+                  key={link.label}
+                  onClick={() => handleNavClick(link.target)}
                   className="text-[16px] font-medium leading-[24px] cursor-pointer bg-transparent border-none"
                   style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                 >
-                  {link}
+                  {link.label}
                 </button>
               ))}
             </nav>
@@ -449,14 +476,15 @@ export const QuickTicketLandingPage: React.FC = () => {
               href="https://app.quickticketai.com/register"
               target="_blank"
               rel="noreferrer"
-              className="px-[18px] py-[10px] rounded-[8px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
+              className="px-[18px] py-[10px] rounded-full text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
               style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
             >
               Register for early access
             </a>
-          </div>
-        </header>
+        </div>
+      </header>
 
+      <div ref={contentRef} className="relative z-10 pt-[72px]">
         <section
           ref={heroRef}
           className="min-h-[calc(100vh-72px)] flex items-start justify-center pt-[60px]"
@@ -484,7 +512,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               href="https://app.quickticketai.com/register"
               target="_blank"
               rel="noreferrer"
-              className="px-[22px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none inline-flex items-center justify-center"
+              className="px-[22px] py-[12px] rounded-full text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none inline-flex items-center justify-center"
               style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
             >
               Register for early access
@@ -555,6 +583,7 @@ export const QuickTicketLandingPage: React.FC = () => {
         ))}
 
         <section
+          ref={(el) => { featuresSectionRef.current = el; }}
           className="flex flex-col justify-center min-h-screen py-24 px-8"
           style={{ backgroundColor: '#1D2E8C' }}
         >
@@ -593,15 +622,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                           }}
                           className="flex flex-col items-center gap-5 will-change-transform"
                         >
-                          <div
-                            className="w-12 h-12 rounded-[28px] flex items-center justify-center"
-                            style={{
-                              backgroundColor: '#304CE8',
-                              border: '8px solid #263BB5',
-                            }}
-                          >
-                            <img src={feature.icon} alt="" className="w-6 h-6" />
-                          </div>
+                        <img src={feature.icon} alt="" className="w-14 h-14" />
                           <div className="flex flex-col items-center gap-2">
                             <h3
                               className="text-xl font-bold leading-[1.5] text-center"
@@ -657,7 +678,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    className="w-[320px] px-[14px] py-[12px] rounded-[8px] text-[16px] leading-[24px] outline-none"
+                    className="w-[320px] px-[14px] py-[12px] rounded-full text-[16px] leading-[24px] outline-none"
                     style={{
                       border: '1px solid #D0D5DD',
                       color: '#101828',
@@ -666,7 +687,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                     }}
                   />
                   <button
-                    className="px-[18px] py-[12px] rounded-[8px] text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none"
+                    className="px-[18px] py-[12px] rounded-full text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none"
                     style={{
                       backgroundColor: '#3553FF',
                       fontFamily: 'Manrope, sans-serif',
