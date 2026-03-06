@@ -453,7 +453,7 @@ export const QuickTicketLandingPage: React.FC = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#EAECF0]/60">
         <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
             <span
-              className="text-[18px] font-semibold leading-[28px]"
+              className="text-[24px] font-semibold leading-[32px] tracking-[0.005em]"
               style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
             >
               QuickTicketAI
@@ -464,7 +464,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                 <button
                   key={link.label}
                   onClick={() => handleNavClick(link.target)}
-                  className="text-[16px] font-medium leading-[24px] cursor-pointer bg-transparent border-none"
+                  className="text-[16px] font-bold leading-[24px] tracking-[0.005em] cursor-pointer bg-transparent border-none"
                   style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                 >
                   {link.label}
@@ -476,7 +476,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               href="https://app.quickticketai.com/register"
               target="_blank"
               rel="noreferrer"
-              className="px-[18px] py-[10px] rounded-full text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
+              className="w-[263px] h-[56px] px-[24px] py-[14px] rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
               style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
             >
               Register for early access
@@ -487,17 +487,19 @@ export const QuickTicketLandingPage: React.FC = () => {
       <div ref={contentRef} className="relative z-10 pt-[72px]">
         <section
           ref={heroRef}
-          className="min-h-[calc(100vh-72px)] flex items-start justify-center pt-[60px]"
+          className="min-h-[calc(100vh-72px)] flex items-start justify-center pt-[30px]"
         >
           <div
             data-anim="hero-content"
             className="flex flex-col items-center text-center max-w-[624px] px-8"
           >
             <h1
-              className="text-[48px] font-bold leading-[60px] tracking-[-0.02em] mb-6"
+              className="text-[60px] font-bold leading-[72px] tracking-[-0.02em] mb-6"
               style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
             >
-              Simplify Job Ticketing and Invoicing with AI
+              <span className="whitespace-nowrap">Simplify Job Ticketing</span>
+              <br />
+              <span className="whitespace-nowrap">and Invoicing with AI</span>
             </h1>
 
             <p
@@ -667,18 +669,18 @@ export const QuickTicketLandingPage: React.FC = () => {
                   Transform the way you manage job tickets
                 </h2>
                 <p
-                  className="text-[18px] font-normal leading-[28px] mb-10"
+                  className="text-[20px] font-medium leading-[30px] mb-10"
                   style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                 >
                   From voice-based ticket creation to automated invoicing,
                   QuickTicketAI helps field teams manage jobs faster and with
                   fewer errors.
                 </p>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    className="w-[320px] px-[14px] py-[12px] rounded-full text-[16px] leading-[24px] outline-none"
+                    className="w-[350px] px-[18px] py-4 rounded-[16px] text-[16px] leading-[24px] outline-none"
                     style={{
                       border: '1px solid #D0D5DD',
                       color: '#101828',
