@@ -51,6 +51,17 @@ const FEATURE_CARDS: ReadonlyArray<FeatureCard> = [
     ],
     position: 'right',
   },
+  {
+    heading: 'Create tickets with voice or text',
+    supporting:
+      'Create job tickets in seconds by speaking or typing. QuickTicketAI understands your request and builds a structured ticket automatically.',
+    checkItems: [
+      'Convert voice notes into complete job tickets',
+      'Automatically detect customer, location, and job type',
+      'Reduce manual data entry and errors',
+    ],
+    position: 'left',
+  },
 ] as const;
 
 const GRID_FEATURES: ReadonlyArray<GridFeature> = [
@@ -242,10 +253,12 @@ export const QuickTicketLandingPage: React.FC = () => {
         );
       }
 
-      cardRefs.current.forEach((cardEl) => {
+      cardRefs.current.forEach((cardEl, index) => {
         if (!cardEl) return;
         const card = cardEl.querySelector('[data-anim="card"]');
         if (!card) return;
+
+        const isFirst = index === 0;
 
         gsap.fromTo(
           card,
@@ -259,7 +272,7 @@ export const QuickTicketLandingPage: React.FC = () => {
             scrollTrigger: {
               trigger: cardEl,
               scroller: container,
-              start: 'top 85%',
+              start: isFirst ? 'top 110%' : 'top 85%',
               end: 'top 40%',
               scrub: 1.5,
             },
@@ -279,7 +292,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               scrollTrigger: {
                 trigger: cardEl,
                 scroller: container,
-                start: 'top 75%',
+                start: isFirst ? 'top 110%' : 'top 75%',
                 end: 'top 40%',
                 scrub: 1.2,
               },
@@ -300,7 +313,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               scrollTrigger: {
                 trigger: cardEl,
                 scroller: container,
-                start: `top ${65 - ci * 7}%`,
+                start: isFirst ? `top ${110 - ci * 7}%` : `top ${65 - ci * 7}%`,
                 end: `top ${30 - ci * 7}%`,
                 scrub: 1.2,
               },
@@ -541,7 +554,8 @@ export const QuickTicketLandingPage: React.FC = () => {
             ref={(el) => {
               cardRefs.current[index] = el as HTMLDivElement | null;
             }}
-            className="min-h-screen flex items-center px-8 lg:px-0"
+            className={`w-full flex px-8 lg:px-0 ${index === 0 ? 'min-h-[80vh] items-start pt-[8vh]' : 'min-h-screen items-center'
+              }`}
           >
             <div
               className={`w-full max-w-[1280px] mx-auto ${card.position === 'left'
