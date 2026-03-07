@@ -51,17 +51,6 @@ const FEATURE_CARDS: ReadonlyArray<FeatureCard> = [
     ],
     position: 'right',
   },
-  {
-    heading: 'Convert jobs to invoices',
-    supporting:
-      'Automatically prepare invoice-ready summaries from completed job tickets and approved work.',
-    checkItems: [
-      'Generate invoice-ready job data',
-      'Reduce billing mistakes and missing information',
-      'Speed up approval and billing cycles',
-    ],
-    position: 'left',
-  },
 ] as const;
 
 const GRID_FEATURES: ReadonlyArray<GridFeature> = [
@@ -482,8 +471,17 @@ export const QuickTicketLandingPage: React.FC = () => {
             href="https://app.quickticketai.com/register"
             target="_blank"
             rel="noreferrer"
-            className="w-[263px] h-[56px] px-[24px] py-[14px] rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center"
-            style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
+            className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2"
+            style={{
+              width: 216,
+              height: 48,
+              paddingTop: 14,
+              paddingRight: 24,
+              paddingBottom: 14,
+              paddingLeft: 24,
+              backgroundColor: '#3553FF',
+              fontFamily: 'Manrope, sans-serif',
+            }}
           >
             Register for early access
           </a>
@@ -520,8 +518,17 @@ export const QuickTicketLandingPage: React.FC = () => {
               href="https://app.quickticketai.com/register"
               target="_blank"
               rel="noreferrer"
-              className="px-[22px] py-[12px] rounded-full text-[16px] font-semibold leading-[24px] text-white cursor-pointer border-none inline-flex items-center justify-center"
-              style={{ backgroundColor: '#3553FF', fontFamily: 'Manrope, sans-serif' }}
+              className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2"
+              style={{
+                width: 263,
+                height: 56,
+                paddingTop: 14,
+                paddingRight: 24,
+                paddingBottom: 14,
+                paddingLeft: 24,
+                backgroundColor: '#3553FF',
+                fontFamily: 'Manrope, sans-serif',
+              }}
             >
               Register for early access
             </a>

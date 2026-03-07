@@ -1,8 +1,6 @@
+import React from 'react';
 import { QuickTicketLandingPage } from './pages';
-import './index.css';
 
-const App = () => {
-  return <QuickTicketLandingPage />;
-};
+const App: React.FC = () => <QuickTicketLandingPage />;
 
 export default App;
