@@ -258,7 +258,7 @@ export const QuickTicketLandingPage: React.FC = () => {
           trigger: heroRef.current,
           scroller: container,
           start: 'top top',
-          end: 'top -25%',
+          end: 'top -30%',
           onLeave: () => setIsHeaderCtaVisible(true),
           onEnterBack: () => setIsHeaderCtaVisible(false),
         });
@@ -496,7 +496,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               width: 216,
               height: 48,
             }}
-            className="flex items-center justify-end overflow-hidden"
+            className="flex items-center justify-end"
           >
             <AnimatePresence initial={false}>
               {isHeaderCtaVisible && (
@@ -505,9 +505,9 @@ export const QuickTicketLandingPage: React.FC = () => {
                   href="https://app.quickticketai.com/register"
                   target="_blank"
                   rel="noreferrer"
-                  initial={{ opacity: 0, x: 32 }}
+                  initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 32 }}
+                  exit={{ opacity: 0, x: 16 }}
                   transition={{ duration: 0.35, ease: 'easeOut' }}
                   className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2 w-full h-full"
                   style={{
