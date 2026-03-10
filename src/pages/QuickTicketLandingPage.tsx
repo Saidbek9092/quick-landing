@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
+import { motion, AnimatePresence } from 'framer-motion';
 import checkCircleSvg from '../assets/check-circle.svg';
 import iconMicrophone from '../assets/icons/icon-microphone.svg';
 import iconGlobe from '../assets/icons/icon-globe.svg';
@@ -146,6 +147,7 @@ export const QuickTicketLandingPage: React.FC = () => {
   const ctaRef = useRef<HTMLElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const featuresSectionRef = useRef<HTMLElement | null>(null);
+  const [isHeaderCtaVisible, setIsHeaderCtaVisible] = useState<boolean>(false);
 
   const frameCount = 203; // Based on ffmpeg output
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -251,6 +253,15 @@ export const QuickTicketLandingPage: React.FC = () => {
             },
           }
         );
+
+        ScrollTrigger.create({
+          trigger: heroRef.current,
+          scroller: container,
+          start: 'top top',
+          end: 'top -25%',
+          onLeave: () => setIsHeaderCtaVisible(true),
+          onEnterBack: () => setIsHeaderCtaVisible(false),
+        });
       }
 
       cardRefs.current.forEach((cardEl, index) => {
@@ -480,24 +491,39 @@ export const QuickTicketLandingPage: React.FC = () => {
             ))}
           </nav>
 
-          <a
-            href="https://app.quickticketai.com/register"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2"
+          <div
             style={{
               width: 216,
               height: 48,
-              paddingTop: 14,
-              paddingRight: 24,
-              paddingBottom: 14,
-              paddingLeft: 24,
-              backgroundColor: '#3553FF',
-              fontFamily: 'Manrope, sans-serif',
             }}
+            className="flex items-center justify-end overflow-hidden"
           >
-            Register for early access
-          </a>
+            <AnimatePresence initial={false}>
+              {isHeaderCtaVisible && (
+                <motion.a
+                  key="header-cta"
+                  href="https://app.quickticketai.com/register"
+                  target="_blank"
+                  rel="noreferrer"
+                  initial={{ opacity: 0, x: 32 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 32 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2 w-full h-full"
+                  style={{
+                    paddingTop: 14,
+                    paddingRight: 24,
+                    paddingBottom: 14,
+                    paddingLeft: 24,
+                    backgroundColor: '#3553FF',
+                    fontFamily: 'Manrope, sans-serif',
+                  }}
+                >
+                  Register for early access
+                </motion.a>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
