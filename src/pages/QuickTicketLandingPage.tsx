@@ -147,6 +147,7 @@ export const QuickTicketLandingPage: React.FC = () => {
   const ctaRef = useRef<HTMLElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const featuresSectionRef = useRef<HTMLElement | null>(null);
+  const hasForceScrolled = useRef<boolean[]>([false, false, false]);
   const [isHeaderCtaVisible, setIsHeaderCtaVisible] = useState<boolean>(false);
 
   const frameCount = 203; // Based on ffmpeg output
@@ -270,6 +271,30 @@ export const QuickTicketLandingPage: React.FC = () => {
         if (!card) return;
 
         const isFirst = index === 0;
+
+        // Auto force-scroll: when card becomes visible, center it
+        ScrollTrigger.create({
+          trigger: card,
+          scroller: container,
+          start: 'top 90%',
+          onEnter: () => {
+            if (!hasForceScrolled.current[index] && lenisRef.current) {
+              hasForceScrolled.current[index] = true;
+              const cardElement = card as HTMLElement;
+              const containerHeight = container.clientHeight;
+              const cardRealHeight = cardElement.offsetHeight;
+              const offset = -Math.round((containerHeight - cardRealHeight) / 2);
+              lenisRef.current.scrollTo(cardElement, {
+                offset,
+                duration: 1.5,
+                lock: true,
+              });
+            }
+          },
+          onLeaveBack: () => {
+            hasForceScrolled.current[index] = false;
+          },
+        });
 
         gsap.fromTo(
           card,
