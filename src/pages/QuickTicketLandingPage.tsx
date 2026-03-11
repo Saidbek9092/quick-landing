@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import checkCircleSvg from '../assets/check-circle.svg';
 import iconMicrophone from '../assets/icons/icon-microphone.svg';
 import iconGlobe from '../assets/icons/icon-globe.svg';
@@ -13,6 +14,7 @@ import iconCloud from '../assets/icons/icon-cloud.svg';
 import iconTicket from '../assets/icons/icon-ticket.svg';
 import iconChart from '../assets/icons/icon-chart.svg';
 import iconGraph from '../assets/icons/icon-graph.svg';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,97 +31,16 @@ interface GridFeature {
   readonly icon: string;
 }
 
-const FEATURE_CARDS: ReadonlyArray<FeatureCard> = [
-  {
-    heading: 'Convert jobs to invoices',
-    supporting:
-      'Automatically prepare invoice-ready summaries from completed job tickets and approved work.',
-    checkItems: [
-      'Generate invoice-ready job data',
-      'Reduce billing mistakes and missing information',
-      'Speed up approval and billing cycles',
-    ],
-    position: 'left',
-  },
-  {
-    heading: 'Monitor jobs and teams live',
-    supporting:
-      'Follow every job from creation to completion with live updates from your field technicians.',
-    checkItems: [
-      'Live job status and progress updates',
-      'Technician activity and assignment tracking',
-      'Instant notifications for changes and approvals',
-    ],
-    position: 'right',
-  },
-  {
-    heading: 'Create tickets with voice or text',
-    supporting:
-      'Create job tickets in seconds by speaking or typing. QuickTicketAI understands your request and builds a structured ticket automatically.',
-    checkItems: [
-      'Convert voice notes into complete job tickets',
-      'Automatically detect customer, location, and job type',
-      'Reduce manual data entry and errors',
-    ],
-    position: 'left',
-  },
-] as const;
-
-const GRID_FEATURES: ReadonlyArray<GridFeature> = [
-  {
-    title: 'Voice Ticketing',
-    description:
-      'Log job tickets hands-free using AI voice capture — ideal for technicians on site.',
-    icon: iconMicrophone,
-  },
-  {
-    title: 'Multilingual Support',
-    description:
-      'Create and review tickets in multiple languages for global and distributed teams.',
-    icon: iconGlobe,
-  },
-  {
-    title: 'Automated Invoicing',
-    description:
-      'Generate invoice-ready data directly from approved job tickets.',
-    icon: iconDocument,
-  },
-  {
-    title: 'Real-Time Sync',
-    description:
-      'Keep all ticket data instantly synced across devices, teams, and roles.',
-    icon: iconSync,
-  },
-  {
-    title: 'AI-Powered Insights',
-    description:
-      'Understand job trends, technician performance, and billing accuracy with AI analytics.',
-    icon: iconStars,
-  },
-  {
-    title: 'Secure Cloud Storage',
-    description:
-      'Protect your data with encryption, backups, and role-based access control.',
-    icon: iconCloud,
-  },
-  {
-    title: 'Manual Ticketing',
-    description:
-      'Create and edit tickets manually when voice input is not available.',
-    icon: iconTicket,
-  },
-  {
-    title: 'Dashboard Reporting',
-    description:
-      'View operational and financial performance in one unified dashboard.',
-    icon: iconChart,
-  },
-  {
-    title: 'High Volume Ready',
-    description:
-      'Built to support large teams and high job volumes with scalable infrastructure.',
-    icon: iconGraph,
-  },
+const GRID_FEATURE_ICONS: ReadonlyArray<string> = [
+  iconMicrophone,
+  iconGlobe,
+  iconDocument,
+  iconSync,
+  iconStars,
+  iconCloud,
+  iconTicket,
+  iconChart,
+  iconGraph,
 ] as const;
 
 interface NavLink {
@@ -127,16 +48,32 @@ interface NavLink {
   readonly target: 'how-it-works' | 'features';
 }
 
-const NAV_LINKS: ReadonlyArray<NavLink> = [
-  { label: 'How it works', target: 'how-it-works' },
-  { label: 'Features', target: 'features' },
-] as const;
-
 const CheckIcon: React.FC = () => (
   <img src={checkCircleSvg} alt="" width={24} height={24} className="shrink-0" />
 );
 
 export const QuickTicketLandingPage: React.FC = () => {
+  const { t } = useTranslation();
+  const featureCards = t('featureCards', {
+    returnObjects: true,
+  }) as ReadonlyArray<FeatureCard>;
+  const gridItems = t('grid.items', {
+    returnObjects: true,
+  }) as ReadonlyArray<Omit<GridFeature, 'icon'>>;
+
+  const GRID_FEATURES: ReadonlyArray<GridFeature> = gridItems.map(
+    (item, index) => ({
+      title: item.title,
+      description: item.description,
+      icon: GRID_FEATURE_ICONS[index],
+    }),
+  );
+
+  const NAV_LINKS: ReadonlyArray<NavLink> = [
+    { label: t('nav.howItWorks'), target: 'how-it-works' },
+    { label: t('nav.features'), target: 'features' },
+  ];
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -495,7 +432,7 @@ export const QuickTicketLandingPage: React.FC = () => {
       </div>
 
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#EAECF0]/60">
-        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px]">
+        <div className="max-w-[1280px] mx-auto px-8 flex items-center justify-between h-[72px] gap-6">
           <span
             className="text-[24px] font-semibold leading-[32px] tracking-[0.005em]"
             style={{ color: '#000A19', fontFamily: 'Manrope, sans-serif' }}
@@ -516,38 +453,41 @@ export const QuickTicketLandingPage: React.FC = () => {
             ))}
           </nav>
 
-          <div
-            style={{
-              width: 216,
-              height: 48,
-            }}
-            className="flex items-center justify-end"
-          >
-            <AnimatePresence initial={false}>
-              {isHeaderCtaVisible && (
-                <motion.a
-                  key="header-cta"
-                  href="https://app.quickticketai.com/register"
-                  target="_blank"
-                  rel="noreferrer"
-                  initial={{ opacity: 0, x: 16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 16 }}
-                  transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2 w-full h-full"
-                  style={{
-                    paddingTop: 14,
-                    paddingRight: 24,
-                    paddingBottom: 14,
-                    paddingLeft: 24,
-                    backgroundColor: '#3553FF',
-                    fontFamily: 'Manrope, sans-serif',
-                  }}
-                >
-                  Register for early access
-                </motion.a>
-              )}
-            </AnimatePresence>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher />
+            <div
+              style={{
+                width: 216,
+                height: 48,
+              }}
+              className="hidden sm:flex items-center justify-end"
+            >
+              <AnimatePresence initial={false}>
+                {isHeaderCtaVisible && (
+                  <motion.a
+                    key="header-cta"
+                    href="https://app.quickticketai.com/register"
+                    target="_blank"
+                    rel="noreferrer"
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 16 }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                    className="rounded-[100px] text-[14px] font-semibold leading-[20px] text-white cursor-pointer border-none inline-flex items-center justify-center gap-2 w-full h-full"
+                    style={{
+                      paddingTop: 14,
+                      paddingRight: 24,
+                      paddingBottom: 14,
+                      paddingLeft: 24,
+                      backgroundColor: '#3553FF',
+                      fontFamily: 'Manrope, sans-serif',
+                    }}
+                  >
+                    {t('hero.cta')}
+                  </motion.a>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </header>
@@ -565,17 +505,16 @@ export const QuickTicketLandingPage: React.FC = () => {
               className="text-[60px] font-bold leading-[72px] tracking-[-0.02em] mb-6"
               style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
             >
-              <span className="whitespace-nowrap">Simplify Job Ticketing</span>
+              <span className="whitespace-nowrap">{t('hero.titleLine1')}</span>
               <br />
-              <span className="whitespace-nowrap">and Invoicing with AI</span>
+              <span className="whitespace-nowrap">{t('hero.titleLine2')}</span>
             </h1>
 
             <p
               className="text-[18px] font-normal leading-[28px] mb-10"
               style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
             >
-              QuickTicketAI helps energy and field service teams create, track,
-              and manage job tickets effortlessly — in any language
+              {t('hero.subtitle')}
             </p>
 
             <a
@@ -594,12 +533,12 @@ export const QuickTicketLandingPage: React.FC = () => {
                 fontFamily: 'Manrope, sans-serif',
               }}
             >
-              Register for early access
+              {t('hero.cta')}
             </a>
           </div>
         </section>
 
-        {FEATURE_CARDS.map((card, index) => (
+        {featureCards.map((card, index) => (
           <section
             key={index}
             ref={(el) => {
@@ -676,14 +615,13 @@ export const QuickTicketLandingPage: React.FC = () => {
                 className="text-4xl font-bold leading-[1.22] tracking-[-2%] text-center"
                 style={{ color: '#FFFFFF', fontFamily: 'Manrope, sans-serif' }}
               >
-                Main features built for field service teams
+                {t('grid.heading')}
               </h2>
               <p
                 className="text-xl font-medium leading-[1.5] text-center max-w-[768px]"
                 style={{ color: '#A2B0FF', fontFamily: 'Manrope, sans-serif' }}
               >
-                Core tools to create, manage, and close job tickets faster — with
-                AI, real-time collaboration, and built-in invoicing.
+                {t('grid.subheading')}
               </p>
             </div>
 
@@ -744,20 +682,18 @@ export const QuickTicketLandingPage: React.FC = () => {
                   className="text-[36px] font-semibold leading-[44px] tracking-[-0.02em] mb-5"
                   style={{ color: '#181D27', fontFamily: 'Manrope, sans-serif' }}
                 >
-                  Transform the way you manage job tickets
+                  {t('cta.heading')}
                 </h2>
                 <p
                   className="text-[20px] font-medium leading-[30px] mb-10"
                   style={{ color: '#535862', fontFamily: 'Manrope, sans-serif' }}
                 >
-                  From voice-based ticket creation to automated invoicing,
-                  QuickTicketAI helps field teams manage jobs faster and with
-                  fewer errors.
+                  {t('cta.body')}
                 </p>
                 <div className="flex items-center gap-2">
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t('cta.emailPlaceholder')}
                     className="w-[350px] px-[18px] py-4 rounded-[16px] text-[16px] leading-[24px] outline-none"
                     style={{
                       border: '1px solid #D0D5DD',
@@ -773,7 +709,7 @@ export const QuickTicketLandingPage: React.FC = () => {
                       fontFamily: 'Manrope, sans-serif',
                     }}
                   >
-                    Submit
+                    {t('cta.submit')}
                   </button>
                 </div>
               </div>
@@ -873,7 +809,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               className="text-[16px] font-normal leading-[24px]"
               style={{ color: '#667085', fontFamily: 'Manrope, sans-serif' }}
             >
-              © 2026 QuickTicketAI. All rights reserved.
+              {t('footer.rights')}
             </span>
           </div>
         </footer>
