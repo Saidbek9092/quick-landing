@@ -276,7 +276,7 @@ export const QuickTicketLandingPage: React.FC = () => {
         ScrollTrigger.create({
           trigger: card,
           scroller: container,
-          start: 'top 90%',
+          start: 'top 100%',
           onEnter: () => {
             if (!hasForceScrolled.current[index] && lenisRef.current) {
               hasForceScrolled.current[index] = true;
@@ -286,7 +286,7 @@ export const QuickTicketLandingPage: React.FC = () => {
               const offset = -Math.round((containerHeight - cardRealHeight) / 2);
               lenisRef.current.scrollTo(cardElement, {
                 offset,
-                duration: 1.5,
+                duration: 1,
                 lock: true,
               });
             }
