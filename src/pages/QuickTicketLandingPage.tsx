@@ -42,7 +42,7 @@ const FEATURE_CARDS: ReadonlyArray<FeatureCard> = [
     position: 'left',
   },
   {
-    heading: 'Monitor jobs and teams live',
+    heading: 'Monitor jobs and teams live and in real-time',
     supporting:
       'Follow every job from creation to completion with live updates from your field technicians.',
     checkItems: [
